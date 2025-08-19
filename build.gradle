@@ -1,0 +1,78 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'checkstyle'
+}
+
+group = 'ru.mentee.power'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Зависимости для JUnit 5 (Jupiter)
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.0'
+    // Для параметризованных тестов
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+
+    // Зависимость для AssertJ (для удобных проверок)
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+}
+
+// Настройка Java (версия и т.д.)
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+checkstyle {
+    // Указываем версию Checkstyle (важно для совместимости с правилами)
+    toolVersion = '11.0.0' // Используй актуальную версию
+
+    // (Опционально) Максимальное количество ошибок перед остановкой
+    // maxErrors = 0
+    // (Опционально) Максимальное количество предупреждений
+    // maxWarnings = 0
+}
+
+// Настройка задачи checkstyleMain (проверка основного кода src/main/java)
+tasks.withType(Checkstyle) {
+    // Говорим Checkstyle использовать файл конфигурации из нашего проекта
+    configFile = rootProject.file('config/checkstyle/google_checks.xml')
+
+    reports {
+        // Генерировать отчеты в XML и HTML форматах
+        xml.required = true
+        html.required = true
+        // Путь к HTML отчету будет build/reports/checkstyle/main.html (и test.html для тестов)
+    }
+
+    // Указываем исходники для проверки (по умолчанию уже настроено для main и test)
+    // source = fileTree('src/main/java')
+}
+
+// Убедимся, что задача check запускает checkstyleMain и checkstyleTest
+// (Обычно это происходит автоматически, но для ясности можно указать)
+tasks.named('check') {
+    dependsOn tasks.withType(Checkstyle)
+}
+
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test // Убедимся, что отчет генерируется после выполнения тестов
+    reports {
+        xml.required = false // XML отчет нам пока не нужен
+        csv.required = false // CSV тоже
+        html.required = true // А вот HTML отчет - это то, что нужно!
+    }
+    // (Опционально) Можно указать, какие классы исключить из отчета
+    // classDirectories.setFrom(files(classDirectories.files.collect { fileTree(dir: it, exclude: '**/some/package/to/exclude/**') }))
+}
