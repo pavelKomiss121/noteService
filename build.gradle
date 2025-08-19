@@ -28,6 +28,10 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
 checkstyle {
     // Указываем версию Checkstyle (важно для совместимости с правилами)
     toolVersion = '11.0.0' // Используй актуальную версию
